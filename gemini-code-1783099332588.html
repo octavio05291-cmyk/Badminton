@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>循環賽管理系統 — 16人雙打</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,-apple-system,Arial,sans-serif;background:#f5f5f3;color:#2c2c2a;font-size:14px;line-height:1.6;}
+.wrap{max-width:860px;margin:0 auto;padding:24px 16px;}
+h1{font-size:20px;font-weight:500;margin-bottom:2px;}
+.sub{color:#888;font-size:12px;margin-bottom:18px;}
+.tabs{display:flex;border-bottom:1.5px solid #e0e0da;margin-bottom:20px;}
+.tab{background:none;border:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;padding:8px 18px;font-size:13px;color:#888;cursor:pointer;font-family:inherit;}
+.tab.on{border-bottom-color:#185fa5;color:#185fa5;font-weight:500;}
+.panel{display:none;}.panel.on{display:block;}
+.pair-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pair-card{border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:10px;border:1.5px solid #e0e0da;background:#fff;}
+.tag{padding:3px 12px;border-radius:20px;font-size:13px;white-space:nowrap;font-weight:500;background:#f0f0ec;color:#2c2c2a;}
+.pair-num{font-size:11px;min-width:26px;flex-shrink:0;font-weight:500;color:#888;}
+.round-block{margin-bottom:12px;}
+.round-title{font-size:12px;color:#888;font-weight:600;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid #ececea;}
+.match-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #f5f5f3;font-size:12px;}
+.match-row:last-child{border-bottom:none;}
+.si{width:38px;text-align:center;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:3px 4px;background:#fff;}
+.si:focus{outline:none;border-color:#185fa5;box-shadow:0 0 0 2px #dbeafe;}
+.stand-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.stand-tbl th{padding:6px 4px;color:#888;font-weight:500;text-align:center;border-bottom:1.5px solid #d5d5ce;}
+.stand-tbl th:nth-child(1),.stand-tbl th:nth-child(2){text-align:left;}
+.stand-tbl td{padding:5px 4px;text-align:center;border-bottom:1px solid #f0f0ec;}
+.stand-tbl td:nth-child(1),.stand-tbl td:nth-child(2){text-align:left;}
+.top4-row{background:#f0f7ff;}
+.top4-row td:first-child,.top4-row td:nth-child(2){font-weight:600;color:#185fa5;}
+.ko-box{background:#fff;border:1px solid #e8e8e4;border-radius:8px;padding:12px 16px;margin-bottom:10px;}
+.ko-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid #f5f5f3;}
+.ko-row:last-child{border-bottom:none;}
+.ko-row.win{font-weight:600;color:#185fa5;}
+.btn-export{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid #d5d5ce;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;color:#5f5e5a;font-family:inherit;}
+.btn-export:hover{background:#f5f5f3;}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.saved-badge{font-size:11px;color:#16a34a;display:none;}
+.loading{position:fixed;inset:0;background:rgba(255,255,255,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:9999;font-size:13px;color:#5f5e5a;}
+.spinner{width:32px;height:32px;border:3px solid #e0e0da;border-top-color:#185fa5;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@media(max-width:600px){.pair-grid{grid-template-columns:1fr;}.toolbar{flex-direction:column;align-items:flex-start;}}
+
+/* ── 8組專屬高質感彩虹標籤樣式 ── */
+.m-label{border:1px solid transparent;border-radius:5px;padding:3px 10px;font-size:12px;color:#2c2c2a;font-weight:600;display:inline-block;}
+.c-g1 { background: #eef2ff; border-color: #c7d2fe; color: #3730a3; } /* 組1: 靛藍 */
+.c-g2 { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; } /* 組2: 薄荷綠 */
+.c-g3 { background: #fff7ed; border-color: #ffedd5; color: #9a3412; } /* 組3: 溫暖橘 */
+.c-g4 { background: #fdf2f8; border-color: #fbcfe8; color: #9d174d; } /* 組4: 玫瑰粉 */
+.c-g5 { background: #f0fdfa; border-color: #ccfbf1; color: #115e59; } /* 組5: 蒂芬妮綠 */
+.c-g6 { background: #fef8e6; border-color: #fde68a; color: #92400e; } /* 組6: 柔和黃 */
+.c-g7 { background: #faf5ff; border-color: #e9d5ff; color: #6b21a8; } /* 組7: 薰衣草紫 */
+.c-g8 { background: #f0f9ff; border-color: #bae6fd; color: #0369a1; } /* 組8: 天空藍 */
+
+.m-label.top4-style{border-color:#93c5fd;background:#eef7ff;color:#1e40af;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
+    <h1>循環賽管理系統</h1>
+    <span class="saved-badge" id="saved-badge">✓ 已自動儲存</span>
+  </div>
+  <p class="sub">16人雙打 ｜ 勝3分／和1分／負0分 ｜ 循環賽前4名晉四強</p>
+  <div class="tabs">
+    <button class="tab on" data-t="pair">配對</button>
+    <button class="tab" data-t="sched">循環賽</button>
+    <button class="tab" data-t="stand">積分排名</button>
+    <button class="tab" data-t="ko">四強決賽</button>
+  </div>
+  <div id="tp-pair" class="panel on"></div>
+  <div id="tp-sched" class="panel"></div>
+  <div id="tp-stand" class="panel"></div>
+  <div id="tp-ko" class="panel"></div>
+</div>
+
+<div id="ex-pair" style="position:fixed;left:-9999px;top:0;width:720px;background:#fff;"></div>
+<div id="ex-sched" style="position:fixed;left:-9999px;top:0;width:720px;background:#fff;"></div>
+<div id="loading" class="loading" style="display:none;"><div class="spinner"></div><span id="loading-msg">產生圖片中…</span></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+// 8 組最新固定配對名單
+const PAIRS=[
+  [{n:'植豪'},{n:'沛珊'}],
+  [{n:'祐誠'},{n:'暄媞'}],
+  [{n:'鴻硯'},{n:'伊辰'}],
+  [{n:'旻琇'},{n:'士翔'}],
+  [{n:'翔禾'},{n:'昱安'}],
+  [{n:'尚堉'},{n:'育增'}],
+  [{n:'陳語'},{n:'珮瓊'}],
+  [{n:'嘉程'},{n:'郁婷'}],
+];
+
+let matches=[];
+const SAVE_KEY='tournament_v4';
+
+function pLabel(i){return '組'+(i+1)+' '+PAIRS[i][0].n+'/'+PA
